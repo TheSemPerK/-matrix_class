@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 
-#include <cstdlib>
 #include <random>
 #include <stdexcept>
 
@@ -28,18 +27,18 @@ public:
             throw std::invalid_argument("TMat(int,int), dim i/j <= 0");
         }
         
-        _data = (T**) malloc(sizeof(T**) * _m);
+        _data = new T*[_m];
         if (_data == 0) {
             throw std::runtime_error("TMat(int,int), T** alloc err");
         } else {
             for (int i = 0; i < _m; ++i) {
-                _data[i] = (T*) malloc(sizeof(T*) * _n);
+                _data[i] = new T[_n];
                 if (_data[i] == 0) {
                     
                     for (--i; i >= 0; --i) {
-                        free(_data[i]);
+                        delete [] _data[i];
                     }
-                    free(_data);
+                    delete [] _data;
                     
                     throw std::runtime_error("TMat(int,int), T* alloc err");
                 }
@@ -59,18 +58,18 @@ public:
             return;
         }
         
-        _data = (T**) malloc(sizeof(T**) * _m);
+        _data = new T*[_m];
         if (_data == 0) {
             throw std::runtime_error("TMat(const std::vector<T>&), T** alloc err");
         } else {
             for (int i = 0; i < _m; ++i) {
-                _data[i] = (T*) malloc(sizeof(T*));
+                _data[i] = new T[1];
                 if (_data[i] == 0) {
                     
                     for (--i; i >= 0; --i) {
-                        free(_data[i]);
+                        delete [] _data[i];
                     }
-                    free(_data);
+                    delete [] _data;
                     
                     throw std::runtime_error("TMat(const std::vector<T>&), T* alloc err");
                 }
@@ -92,18 +91,18 @@ public:
             return;
         }
         
-        _data = (T**) malloc(sizeof(T**) * _m);
+        _data = new T*[_m];
         if (_data == 0) {
             throw std::runtime_error("TMat(const T*,int), T** alloc err");
         } else {
             for (int i = 0; i < _m; ++i) {
-                _data[i] = (T*) malloc(sizeof(T*));
+                _data[i] = new T[1];
                 if (_data[i] == 0) {
                     
                     for (--i; i >= 0; --i) {
-                        free(_data[i]);
+                        delete [] data[i];
                     }
-                    free(_data);
+                    delete [] _data;
                     
                     throw std::runtime_error("TMat(const T*,int), T* alloc err");
                 }
@@ -121,18 +120,18 @@ public:
             return;
         }
         
-        _data = (T**) malloc(sizeof(T**) * _m);
+        _data = new T*[_m];
         if (_data == 0) {
             throw std::runtime_error("TMat(const TMat&), T** alloc err");
         } else {
             for (int i = 0; i < _m; ++i) {
-                _data[i] = (T*) malloc(sizeof(T*) * _n);
+                _data[i] = new T[_n];
                 if (_data[i] == 0) {
                     
                     for (--i; i >= 0; --i) {
-                        free(_data[i]);
+                        delete [] _data[i];
                     }
-                    free(_data);
+                    delete [] _data;
                     
                     throw std::runtime_error("TMat(const TMat&), T* alloc err");
                 }
@@ -147,7 +146,7 @@ public:
     TMat() :
         _m(0), _n(0), _data(0)
     {
-
+        // ctor
     }
 
     ~TMat() {
@@ -155,10 +154,10 @@ public:
         if (_data != 0) {
             for (int i = 0; i < _m; ++i) {
                 if (_data[i] != 0) {
-                    free(_data[i]);
+                    delete [] _data[i];
                 }
             }
-            free(_data);
+            delete [] _data;
         }
     }
     
@@ -223,10 +222,10 @@ public:
                 if (_data != 0) {
                     for (int i = 0; i < _m; ++i) {
                         if (_data[i] != 0) {
-                            free(_data[i]);
+                            delete [] data[i];
                         }
                     }
-                    free(_data);
+                    delete [] _data;
                 }
                     
                 _m = 0;
@@ -247,27 +246,27 @@ public:
                 if (_data != 0) {
                     for (int i = 0; i < _m; ++i) {
                         if (_data[i] != 0) {
-                            free(_data[i]);
+                            delete [] data[i];
                         }
                     }
-                    free(_data);
+                    delete [] _data;
                 }
             
                 _m = other._m;
                 _n = other._n;
                 
-                _data = (T**) malloc(sizeof(T**) * _m);
+                _data = new T*[_m];
                 if (_data == 0) {
                     throw std::runtime_error("TMat::operator=, T** alloc err");
                 } else {
                     for (int i = 0; i < _m; ++i) {
-                        _data[i] = (T*) malloc(sizeof(T*) * _n);
+                        _data[i] = new T[_n];
                         if (_data[i] == 0) {
                             
                             for (--i; i >= 0; --i) {
-                                free(_data[i]);
+                                delete [] data[i];
                             }
-                            free(_data);
+                            delete [] _data;
                             
                             throw std::runtime_error("TMat::operator=, T* alloc err");
                         }
@@ -410,49 +409,49 @@ TMat<T> solve(const TMat<T>& A, const TMat<T>& b) {
     // A(m,n) * x(n,1) = b(m,1)
     // x = A^-1 * b
     
-    if (std::is_floating_point<T>::value) {
-        Dim dim(A.size());
-        TMat<T> E(dim.i, dim.j);
-        TMat<T> C(A);
-        
-        for (int i = 0; i < dim.i; ++i) {
-            E.set(i, i, T(1));
-        }
-        
-        for (int i = 0; i < dim.i; ++i) {
-                
-            T mm = 1.0 / C.get(i,i);
-            
-            for (int k = 0; k < dim.i; ++k) {
-                C.set(i,k, C.get(i,k) * mm);
-            }
-            
-            for (int k = 0; k < dim.i; ++k) {
-                E.set(i,k, E.get(i,k) * mm);
-            }
-            
-            for (int j = 0; j < dim.i; ++j) {
-                
-                if (i == j) {
-                    continue;
-                }
-                
-                mm = C.get(j,i);
-                
-                for (int k = 0; k < dim.i; ++k) {
-                    C.set(j,k, C.get(j,k) - mm * C.get(i,k));
-                }
-                
-                for (int k = 0; k < dim.i; ++k) {
-                    E.set(j,k, E.get(j,k) - mm * E.get(i,k));
-                }
-            }
-        }
-        
-        return E * b;
+    if (!std::is_floating_point<T>::value) {
+        throw std::runtime_error("TMat::solve, unsupported template type");
     }
     
-    return TMat<T>();
+    Dim dim(A.size());
+    TMat<T> E(dim.i, dim.j);
+    TMat<T> C(A);
+    
+    for (int i = 0; i < dim.i; ++i) {
+        E.set(i, i, T(1));
+    }
+    
+    for (int i = 0; i < dim.i; ++i) {
+            
+        T mm = 1.0 / C.get(i,i);
+        
+        for (int k = 0; k < dim.i; ++k) {
+            C.set(i,k, C.get(i,k) * mm);
+        }
+        
+        for (int k = 0; k < dim.i; ++k) {
+            E.set(i,k, E.get(i,k) * mm);
+        }
+        
+        for (int j = 0; j < dim.i; ++j) {
+            
+            if (i == j) {
+                continue;
+            }
+            
+            mm = C.get(j,i);
+            
+            for (int k = 0; k < dim.i; ++k) {
+                C.set(j,k, C.get(j,k) - mm * C.get(i,k));
+            }
+            
+            for (int k = 0; k < dim.i; ++k) {
+                E.set(j,k, E.get(j,k) - mm * E.get(i,k));
+            }
+        }
+    }
+    
+    return E * b;
 }
 
 } // namespace lab

@@ -104,5 +104,14 @@ int main()
     lab::Mat _mat2;
     _mat2 = _mat;
     
+    lab::TMat<int> m1int(4,4);
+    m1int.uniform_();
+    cout << "m1int:\n" << m1int << endl;
+    lab::TMat<int> m2int(4,1);
+    m2int.uniform_();
+    cout << "m2int:\n" << m2int << endl;
+    
+    cout << "m3int = \n" << solve(m1int, m2int) << endl;
+    
     return 0;
 }

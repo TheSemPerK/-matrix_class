@@ -1,6 +1,5 @@
 #include "Mat.hpp"
 
-#include <cstdlib>
 #include <random>
 #include <stdexcept>
 
@@ -11,21 +10,21 @@ Mat::Mat(int m, int n) :
 {
     
     if (_m <= 0 || _n <= 0) {
-        throw std::invalid_argument("Mat(int,int), dim i/j <= 0");
+        throw std::invalid_argument("Mat(int,int), dim m/n <= 0");
     }
     
-    _data = (double**) malloc(sizeof(double**) * _m);
+    _data = new double*[_m];
     if (_data == 0) {
         throw std::runtime_error("Mat(int,int), double** alloc err");
     } else {
         for (int i = 0; i < _m; ++i) {
-            _data[i] = (double*) malloc(sizeof(double*) * _n);
+            _data[i] = new double[_n];
             if (_data[i] == 0) {
                 
                 for (--i; i >= 0; --i) {
-                    free(_data[i]);
+                    delete [] _data[i];
                 }
-                free(_data);
+                delete [] _data;
                 
                 throw std::runtime_error("Mat(int,int), double* alloc err");
             }
@@ -45,18 +44,18 @@ Mat::Mat(const std::vector<double>& vec) :
         return;
     }
     
-    _data = (double**) malloc(sizeof(double**) * _m);
+    _data = new double*[_m];
     if (_data == 0) {
         throw std::runtime_error("Mat(const std::vector<double>&), double** alloc err");
     } else {
         for (int i = 0; i < _m; ++i) {
-            _data[i] = (double*) malloc(sizeof(double*));
+            _data[i] = new double[1];
             if (_data[i] == 0) {
                 
                 for (--i; i >= 0; --i) {
-                    free(_data[i]);
+                    delete [] _data[i];
                 }
-                free(_data);
+                delete [] _data;
                 
                 throw std::runtime_error("Mat(const std::vector<double>&), double* alloc err");
             }
@@ -74,22 +73,22 @@ Mat::Mat(const double* mem, int m) :
         throw std::invalid_argument("Mat(const double*,int), null array");
     }
     
-    if (_m == 0) {
+    if (_m <= 0) {
         return;
     }
     
-    _data = (double**) malloc(sizeof(double**) * _m);
+    _data = new double*[_m];
     if (_data == 0) {
         throw std::runtime_error("Mat(const double*,int), double** alloc err");
     } else {
         for (int i = 0; i < _m; ++i) {
-            _data[i] = (double*) malloc(sizeof(double*));
+            _data[i] = new double[1];
             if (_data[i] == 0) {
                 
                 for (--i; i >= 0; --i) {
-                    free(_data[i]);
+                    delete [] _data[i];
                 }
-                free(_data);
+                delete [] _data;
                 
                 throw std::runtime_error("Mat(const double*,int), double* alloc err");
             }
@@ -107,18 +106,18 @@ Mat::Mat(const Mat& other) :
         return;
     }
     
-    _data = (double**) malloc(sizeof(double**) * _m);
+    _data = new double*[_m];
     if (_data == 0) {
         throw std::runtime_error("Mat(const Mat&), double** alloc err");
     } else {
         for (int i = 0; i < _m; ++i) {
-            _data[i] = (double*) malloc(sizeof(double*) * _n);
+            _data[i] = new double[_n];
             if (_data[i] == 0) {
                 
                 for (--i; i >= 0; --i) {
-                    free(_data[i]);
+                    delete [] _data[i];
                 }
-                free(_data);
+                delete [] _data;
                 
                 throw std::runtime_error("Mat(const Mat&), double* alloc err");
             }
@@ -133,7 +132,7 @@ Mat::Mat(const Mat& other) :
 Mat::Mat() :
     _m(0), _n(0), _data(0)
 {
-
+    // ctor
 }
 
 Mat::~Mat() {
@@ -141,10 +140,10 @@ Mat::~Mat() {
     if (_data != 0) {
         for (int i = 0; i < _m; ++i) {
             if (_data[i] != 0) {
-                free(_data[i]);
+                delete [] _data[i];
             }
         }
-        free(_data);
+        delete [] _data;
     }
 }
 
@@ -209,10 +208,10 @@ Mat& Mat::operator=(const Mat& other) {
             if (_data != 0) {
                 for (int i = 0; i < _m; ++i) {
                     if (_data[i] != 0) {
-                        free(_data[i]);
+                        delete [] _data[i];
                     }
                 }
-                free(_data);
+                delete [] _data;
             }
                 
             _m = 0;
@@ -233,27 +232,27 @@ Mat& Mat::operator=(const Mat& other) {
             if (_data != 0) {
                 for (int i = 0; i < _m; ++i) {
                     if (_data[i] != 0) {
-                        free(_data[i]);
+                        delete [] _data[i];
                     }
                 }
-                free(_data);
+                delete [] _data;
             }
         
             _m = other._m;
             _n = other._n;
             
-            _data = (double**) malloc(sizeof(double**) * _m);
+            _data = new double*[_m];
             if (_data == 0) {
                 throw std::runtime_error("TMat::operator=, double** alloc err");
             } else {
                 for (int i = 0; i < _m; ++i) {
-                    _data[i] = (double*) malloc(sizeof(double*) * _n);
+                    _data[i] = new double[_n];
                     if (_data[i] == 0) {
                         
                         for (--i; i >= 0; --i) {
-                            free(_data[i]);
+                            delete [] _data[i];
                         }
-                        free(_data);
+                        delete [] _data;
                         
                         throw std::runtime_error("TMat::operator=, double* alloc err");
                     }
